@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import './Chatbot.css'
 import faqPreprocessingService from '../services/faqPreprocessingService'
+import faqMatchingService from '../services/faqMatchingService'
 
 const Chatbot = () => {
   const [messages, setMessages] = useState([
@@ -26,12 +27,18 @@ const Chatbot = () => {
       faqPreprocessingService.initialize()
       const stats = faqPreprocessingService.getStatistics()
       console.log('FAQ Dataset loaded:', stats)
+      
+      // Initialize FAQ matching service
+      faqMatchingService.initialize()
+      const matchingStats = faqMatchingService.getStatistics()
+      console.log('FAQ Matching Service initialized:', matchingStats)
+      
       setFaqLoaded(true)
       
       // Add info message about loaded FAQs
       const infoMessage = {
         id: Date.now(),
-        text: `📚 Loaded ${stats.totalFAQs} FAQ questions across ${stats.categories} categories.`,
+        text: `📚 Loaded ${stats.totalFAQs} FAQ questions across ${stats.categories} categories. Ready to answer your questions!`,
         type: 'bot',
       }
       setMessages(prev => [...prev, infoMessage])
@@ -74,26 +81,67 @@ const Chatbot = () => {
     setMessages(prev => [...prev, userMessage])
     setInputValue('')
 
-    // Preprocess the user's question (Part 2 - preprocessing only, no matching yet)
+    // Find matching FAQ and provide answer (Part 3 - FAQ matching with cosine similarity)
     if (faqLoaded) {
-      const preprocessedQuestion = faqPreprocessingService.preprocessQuestion(trimmedMessage)
-      console.log('User question preprocessing:', {
-        original: preprocessedQuestion.original,
-        processed: preprocessedQuestion.processed,
-        tokens: preprocessedQuestion.tokens,
-        wordCount: preprocessedQuestion.wordCount
-      })
-    }
+      setTimeout(() => {
+        try {
+          // Find best matching FAQ
+          const matchResult = faqMatchingService.findBestMatch(trimmedMessage)
+          
+          console.log('Match result:', {
+            found: matchResult.found,
+            similarity: matchResult.similarity,
+            question: matchResult.question,
+            category: matchResult.category
+          })
 
-    // Add bot response (Part 2 - no FAQ matching yet)
-    setTimeout(() => {
-      const botMessage = {
-        id: Date.now() + 1,
-        text: "Thank you for your question! Your input has been preprocessed. FAQ matching functionality will be added in Part 3.",
-        type: 'bot',
-      }
-      setMessages(prev => [...prev, botMessage])
-    }, 500)
+          let botResponse = ''
+          
+          if (matchResult.found) {
+            // Format similarity as percentage
+            const similarityPercent = (matchResult.similarity * 100).toFixed(1)
+            
+            // Create response with matched answer
+            botResponse = matchResult.answer
+            
+            // Add similarity info for debugging (optional - can be removed in production)
+            if (matchResult.similarity < 0.5) {
+              botResponse += `\n\n💡 Note: This answer has ${similarityPercent}% confidence. If this doesn't answer your question, please try rephrasing.`
+            }
+            
+            console.log(`✓ Match found with ${similarityPercent}% similarity`)
+          } else {
+            botResponse = matchResult.message || "I couldn't find a good answer to your question. Please try asking in a different way or contact support for help."
+            console.log('✗ No good match found')
+          }
+
+          const botMessage = {
+            id: Date.now() + 1,
+            text: botResponse,
+            type: 'bot',
+          }
+          setMessages(prev => [...prev, botMessage])
+        } catch (error) {
+          console.error('Error matching FAQ:', error)
+          const errorMessage = {
+            id: Date.now() + 1,
+            text: 'Sorry, I encountered an error processing your question. Please try again.',
+            type: 'bot',
+          }
+          setMessages(prev => [...prev, errorMessage])
+        }
+      }, 500)
+    } else {
+      // FAQ not loaded yet
+      setTimeout(() => {
+        const botMessage = {
+          id: Date.now() + 1,
+          text: 'Sorry, the FAQ system is still loading. Please try again in a moment.',
+          type: 'bot',
+        }
+        setMessages(prev => [...prev, botMessage])
+      }, 500)
+    }
   }
 
   const handleKeyPress = (e) => {
