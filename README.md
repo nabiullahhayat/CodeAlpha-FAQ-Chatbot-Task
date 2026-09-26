@@ -2,7 +2,7 @@
 
 A clean, professional FAQ Chatbot application built with React + Vite.
 
-## Current Status: Part 5 Complete ✅ - Fully Functional FAQ Chatbot
+## Current Status: Part 6 Complete ✅ - Full Conversation Management
 
 ### Part 1 - Project Setup & Basic UI ✅
 - React + Vite setup
@@ -47,6 +47,17 @@ A clean, professional FAQ Chatbot application built with React + Vite.
 - Auto-scroll to latest message
 - Keyboard support (Enter to send)
 - Complete end-to-end FAQ chatbot functionality
+
+### Part 6 - Conversation History & Chat State ✅
+- Conversation history maintained in React state
+- All messages preserved during session (welcome + user questions + bot responses)
+- Chronological order guaranteed (oldest → newest)
+- New messages appended without replacing previous ones
+- Welcome messages displayed on start
+- Conversation state stable across multiple interactions
+- Proper state management with immutable updates
+- Auto-scroll updates on new messages
+- Session-based history (clears on page refresh, no persistence yet)
 
 ## Tech Stack
 
@@ -114,6 +125,7 @@ FAQ Chatbot/
 ├── PART4_TESTING.md               # Part 4 testing guide
 ├── PART4_SUMMARY.md               # Part 4 summary
 ├── PART5_SUMMARY.md               # Part 5 summary
+├── PART6_SUMMARY.md               # Part 6 summary
 └── README.md                      # This file
 ```
 
@@ -175,6 +187,21 @@ FAQ Chatbot/
 - ✅ Complete end-to-end functionality
 - ✅ Responsive UI preserved (desktop & mobile)
 - ✅ Error handling for matching failures
+
+### Part 6 Features ✅
+- ✅ Conversation history maintained in React state
+- ✅ All user questions preserved during session
+- ✅ All bot responses preserved during session
+- ✅ Welcome messages displayed on start
+- ✅ Chronological message order (oldest → newest)
+- ✅ New messages appended (never replace previous)
+- ✅ Proper immutable state updates (spread operator)
+- ✅ Unique message IDs for React keys
+- ✅ Conversation state stable across multiple questions
+- ✅ Auto-scroll triggered on new messages
+- ✅ Session-based history (no persistence yet)
+- ✅ Scrollable message history
+- ✅ All Parts 1-5 features preserved
 
 ## Testing Part 4
 
@@ -355,15 +382,26 @@ similarity = (A · B) / (||A|| × ||B||)
 
 ## Next Steps
 
-The FAQ Chatbot is now complete with full end-to-end functionality!
+The FAQ Chatbot is now complete with full conversation management!
+
+**Current Capabilities:**
+- ✅ Professional responsive UI
+- ✅ 25 FAQ questions across 7 categories
+- ✅ Text preprocessing and normalization
+- ✅ TF-IDF vectorization and cosine similarity
+- ✅ Configurable threshold-based matching
+- ✅ Clear fallback handling
+- ✅ Complete chat interface
+- ✅ Full conversation history (session-based)
 
 **Optional Future Enhancements:**
-- Conversation history tracking
-- Multi-turn dialogue support
+- LocalStorage persistence (save history across refreshes)
+- Clear conversation button
+- Message timestamps
+- Export conversation feature
+- Multi-turn dialogue context
 - User feedback collection
-- Answer refinement based on feedback
-- Multi-language support
 - Additional FAQ categories
 - Admin interface for managing FAQs
 
-The project is production-ready for basic FAQ functionality.
+The project is production-ready for FAQ chatbot functionality with session-based conversation history.
