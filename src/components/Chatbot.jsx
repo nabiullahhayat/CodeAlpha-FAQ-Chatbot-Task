@@ -32,15 +32,21 @@ const Chatbot = () => {
 
   // Initialize FAQ preprocessing service on mount
   useEffect(() => {
+    // Part 11: Enhanced error handling for FAQ initialization
     try {
+      // Part 11: Validate services exist
+      if (!faqPreprocessingService || !faqMatchingService) {
+        throw new Error('FAQ services not available')
+      }
+
       faqPreprocessingService.initialize()
       const stats = faqPreprocessingService.getStatistics()
-      console.log('FAQ Dataset loaded:', stats)
+      console.log('✅ FAQ Dataset loaded:', stats)
       
       // Initialize FAQ matching service
       faqMatchingService.initialize()
       const matchingStats = faqMatchingService.getStatistics()
-      console.log('FAQ Matching Service initialized:', matchingStats)
+      console.log('✅ FAQ Matching Service initialized:', matchingStats)
       
       setFaqLoaded(true)
       
@@ -52,8 +58,17 @@ const Chatbot = () => {
       }
       setMessages(prev => [...prev, infoMessage])
     } catch (error) {
-      console.error('Error loading FAQ data:', error)
+      // Part 11: Enhanced error handling and user feedback
+      console.error('❌ Error loading FAQ data:', error)
       setFaqLoaded(false)
+      
+      // Part 11: Inform user of initialization error
+      const errorMessage = {
+        id: Date.now(),
+        text: '⚠️ Sorry, there was an error loading the FAQ system. Some features may not work correctly. Please refresh the page.',
+        type: 'bot',
+      }
+      setMessages(prev => [...prev, errorMessage])
     }
   }, [])
 
@@ -75,15 +90,38 @@ const Chatbot = () => {
   }, [])
 
   // Part 7: Save messages to localStorage whenever they change
+  // Part 11: Enhanced with error handling
   useEffect(() => {
-    saveMessages(messages)
+    try {
+      const success = saveMessages(messages)
+      if (!success) {
+        console.warn('⚠️ Failed to save messages to localStorage')
+      }
+    } catch (error) {
+      console.error('❌ Unexpected error saving messages:', error)
+    }
   }, [messages])
 
   const handleSendMessage = () => {
     const trimmedMessage = inputValue.trim()
 
-    // Part 9: Prevent submission while processing
-    if (trimmedMessage === '' || isProcessing) {
+    // Part 11: Enhanced input validation
+    if (!trimmedMessage || trimmedMessage === '' || isProcessing) {
+      // Part 11: Optionally show feedback for empty input
+      if (!isProcessing && inputValue && !trimmedMessage) {
+        console.log('⚠️ Empty or whitespace-only input ignored')
+      }
+      return
+    }
+
+    // Part 11: Validate input length (prevent extremely long input)
+    if (trimmedMessage.length > 1000) {
+      const errorMessage = {
+        id: Date.now(),
+        text: '⚠️ Your question is too long. Please keep it under 1000 characters.',
+        type: 'bot',
+      }
+      setMessages(prev => [...prev, errorMessage])
       return
     }
 
@@ -103,8 +141,18 @@ const Chatbot = () => {
     if (faqLoaded) {
       setTimeout(() => {
         try {
+          // Part 11: Validate matching service is available
+          if (!faqMatchingService || typeof faqMatchingService.findBestMatch !== 'function') {
+            throw new Error('FAQ matching service not available')
+          }
+
           // Find best matching FAQ using configured threshold
           const matchResult = faqMatchingService.findBestMatch(trimmedMessage)
+          
+          // Part 11: Validate match result structure
+          if (!matchResult || typeof matchResult !== 'object') {
+            throw new Error('Invalid match result')
+          }
           
           console.log('Part 4 - Match result:', {
             found: matchResult.found,
@@ -134,7 +182,7 @@ const Chatbot = () => {
             console.log(`✓ Threshold met (${(matchResult.usedThreshold * 100).toFixed(1)}%) - Answer provided`)
           } else {
             // Part 4: Threshold not met - use fallback message
-            botResponse = matchResult.message
+            botResponse = matchResult.message || "Sorry, I couldn't find a relevant answer to your question."
             
             // Log details for debugging
             const similarityPercent = (matchResult.similarity * 100).toFixed(1)
@@ -150,10 +198,11 @@ const Chatbot = () => {
           setMessages(prev => [...prev, botMessage])
           setIsProcessing(false) // Part 9: Reset processing state
         } catch (error) {
-          console.error('Error matching FAQ:', error)
+          // Part 11: Enhanced error handling
+          console.error('❌ Error matching FAQ:', error)
           const errorMessage = {
             id: Date.now() + 1,
-            text: 'Sorry, I encountered an error processing your question. Please try again.',
+            text: '❌ Sorry, I encountered an unexpected error processing your question. Please try again, or rephrase your question.',
             type: 'bot',
           }
           setMessages(prev => [...prev, errorMessage])
@@ -165,7 +214,7 @@ const Chatbot = () => {
       setTimeout(() => {
         const botMessage = {
           id: Date.now() + 1,
-          text: 'Sorry, the FAQ system is still loading. Please try again in a moment.',
+          text: '⚠️ Sorry, the FAQ system is still loading. Please try again in a moment.',
           type: 'bot',
         }
         setMessages(prev => [...prev, botMessage])
