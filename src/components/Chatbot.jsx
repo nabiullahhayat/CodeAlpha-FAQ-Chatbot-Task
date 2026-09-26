@@ -2,20 +2,28 @@ import { useState, useRef, useEffect } from 'react'
 import './Chatbot.css'
 import faqPreprocessingService from '../services/faqPreprocessingService'
 import faqMatchingService from '../services/faqMatchingService'
+import { saveMessages, loadMessages } from '../utils/storageUtils'
+
+// Default welcome messages when no saved conversation exists
+const DEFAULT_WELCOME_MESSAGES = [
+  {
+    id: 1,
+    text: "👋 Welcome to FAQ Chatbot!",
+    type: 'bot',
+  },
+  {
+    id: 2,
+    text: "I'm here to help answer your questions. Feel free to ask me anything!",
+    type: 'bot',
+  }
+]
 
 const Chatbot = () => {
-  const [messages, setMessages] = useState([
-    {
-      id: 1,
-      text: "👋 Welcome to FAQ Chatbot!",
-      type: 'bot',
-    },
-    {
-      id: 2,
-      text: "I'm here to help answer your questions. Feel free to ask me anything!",
-      type: 'bot',
-    }
-  ])
+  // Part 7: Load saved messages from localStorage, or use default welcome messages
+  const [messages, setMessages] = useState(() => {
+    const savedMessages = loadMessages()
+    return savedMessages || DEFAULT_WELCOME_MESSAGES
+  })
   const [inputValue, setInputValue] = useState('')
   const [faqLoaded, setFaqLoaded] = useState(false)
   const chatAreaRef = useRef(null)
@@ -64,6 +72,11 @@ const Chatbot = () => {
       inputRef.current.focus()
     }
   }, [])
+
+  // Part 7: Save messages to localStorage whenever they change
+  useEffect(() => {
+    saveMessages(messages)
+  }, [messages])
 
   const handleSendMessage = () => {
     const trimmedMessage = inputValue.trim()
