@@ -1,6 +1,7 @@
 /**
  * FAQ Matching Service
  * Part 3: Match user questions to FAQ questions using cosine similarity
+ * Part 4: Enhanced threshold configuration and fallback handling
  */
 
 import faqPreprocessingService from './faqPreprocessingService'
@@ -12,8 +13,28 @@ import {
 } from '../utils/vectorUtils'
 
 /**
+ * Default configuration for FAQ matching
+ */
+const DEFAULT_CONFIG = {
+  // Minimum similarity threshold for accepting a match
+  minSimilarityThreshold: 0.3,
+  
+  // Confidence levels for user feedback
+  highConfidenceThreshold: 0.7,
+  mediumConfidenceThreshold: 0.5,
+  
+  // Fallback messages
+  fallbackMessages: {
+    noMatch: "Sorry, I couldn't find a relevant answer to your question. Please try rephrasing your question or contact support for assistance.",
+    emptyQuery: "Please provide a valid question so I can help you find the right answer.",
+    lowConfidence: "I found a possible answer, but I'm not very confident it matches your question. Here it is:"
+  }
+}
+
+/**
  * FAQ Matching Service Class
  * Handles FAQ matching using TF-IDF and cosine similarity
+ * Part 4: Enhanced with configurable thresholds and fallback handling
  */
 class FAQMatchingService {
   constructor() {
@@ -22,6 +43,61 @@ class FAQMatchingService {
     this.faqVectors = null
     this.preprocessedFAQs = null
     this.initialized = false
+    
+    // Part 4: Configurable thresholds
+    this.config = { ...DEFAULT_CONFIG }
+  }
+  
+  /**
+   * Set similarity threshold
+   * Part 4: Allow dynamic threshold configuration
+   * @param {number} threshold - New minimum similarity threshold (0-1)
+   */
+  setThreshold(threshold) {
+    if (threshold >= 0 && threshold <= 1) {
+      this.config.minSimilarityThreshold = threshold
+      console.log(`Similarity threshold updated to: ${threshold}`)
+    } else {
+      console.warn('Threshold must be between 0 and 1')
+    }
+  }
+  
+  /**
+   * Get current threshold
+   * @returns {number} - Current minimum similarity threshold
+   */
+  getThreshold() {
+    return this.config.minSimilarityThreshold
+  }
+  
+  /**
+   * Set custom fallback message
+   * Part 4: Allow custom fallback messages
+   * @param {string} type - Message type (noMatch, emptyQuery, lowConfidence)
+   * @param {string} message - Custom message
+   */
+  setFallbackMessage(type, message) {
+    if (this.config.fallbackMessages[type]) {
+      this.config.fallbackMessages[type] = message
+      console.log(`Fallback message '${type}' updated`)
+    } else {
+      console.warn(`Invalid fallback message type: ${type}`)
+    }
+  }
+  
+  /**
+   * Get confidence level based on similarity score
+   * @param {number} similarity - Similarity score
+   * @returns {string} - Confidence level (high, medium, low)
+   */
+  getConfidenceLevel(similarity) {
+    if (similarity >= this.config.highConfidenceThreshold) {
+      return 'high'
+    } else if (similarity >= this.config.mediumConfidenceThreshold) {
+      return 'medium'
+    } else {
+      return 'low'
+    }
   }
 
   /**
@@ -60,14 +136,18 @@ class FAQMatchingService {
 
   /**
    * Find the best matching FAQ for a user question
+   * Part 4: Enhanced with clear threshold checking and fallback handling
    * @param {string} userQuestion - User's input question
-   * @param {number} minSimilarity - Minimum similarity threshold (default: 0.1)
-   * @returns {object} - Match result with question, answer, and score
+   * @param {number} customThreshold - Optional custom threshold (overrides default)
+   * @returns {object} - Match result with question, answer, score, and confidence
    */
-  findBestMatch(userQuestion, minSimilarity = 0.1) {
+  findBestMatch(userQuestion, customThreshold = null) {
     if (!this.initialized) {
       this.initialize()
     }
+
+    // Use custom threshold or default
+    const threshold = customThreshold !== null ? customThreshold : this.config.minSimilarityThreshold
 
     // Preprocess the user question
     const preprocessedQuestion = faqPreprocessingService.preprocessQuestion(userQuestion)
@@ -82,7 +162,10 @@ class FAQMatchingService {
         similarity: 0,
         faqId: null,
         category: null,
-        message: 'Please provide a valid question.'
+        confidence: 'none',
+        thresholdMet: false,
+        usedThreshold: threshold,
+        message: this.config.fallbackMessages.emptyQuery
       }
     }
 
@@ -102,20 +185,27 @@ class FAQMatchingService {
       }
     })
 
-    // Check if similarity meets minimum threshold
-    if (highestSimilarity < minSimilarity || !bestMatch) {
+    // Part 4: Clear threshold checking
+    const thresholdMet = highestSimilarity >= threshold
+    const confidence = this.getConfidenceLevel(highestSimilarity)
+
+    // If threshold not met, return fallback
+    if (!thresholdMet || !bestMatch) {
       return {
         found: false,
-        question: null,
+        question: bestMatch ? bestMatch.question : null,
         answer: null,
         similarity: highestSimilarity,
-        faqId: null,
-        category: null,
-        message: "I couldn't find a good match for your question. Please try rephrasing or ask something else."
+        faqId: bestMatch ? bestMatch.id : null,
+        category: bestMatch ? bestMatch.category : null,
+        confidence: 'none',
+        thresholdMet: false,
+        usedThreshold: threshold,
+        message: this.config.fallbackMessages.noMatch
       }
     }
 
-    // Return the best match
+    // Return the best match with confidence info
     return {
       found: true,
       question: bestMatch.question,
@@ -123,6 +213,9 @@ class FAQMatchingService {
       similarity: highestSimilarity,
       faqId: bestMatch.id,
       category: bestMatch.category,
+      confidence: confidence,
+      thresholdMet: true,
+      usedThreshold: threshold,
       processedUserQuestion: processedText,
       processedFAQQuestion: bestMatch.processedQuestion
     }
@@ -171,6 +264,7 @@ class FAQMatchingService {
 
   /**
    * Get matching statistics
+   * Part 4: Include threshold configuration
    * @returns {object} - Statistics about the matching system
    */
   getStatistics() {
@@ -184,8 +278,20 @@ class FAQMatchingService {
       initialized: true,
       vocabularySize: this.vocabulary.length,
       totalFAQs: this.preprocessedFAQs.length,
-      vectorDimensions: this.vocabulary.length
+      vectorDimensions: this.vocabulary.length,
+      currentThreshold: this.config.minSimilarityThreshold,
+      highConfidenceThreshold: this.config.highConfidenceThreshold,
+      mediumConfidenceThreshold: this.config.mediumConfidenceThreshold
     }
+  }
+  
+  /**
+   * Get current configuration
+   * Part 4: Return full configuration
+   * @returns {object} - Current configuration
+   */
+  getConfig() {
+    return { ...this.config }
   }
 
   /**

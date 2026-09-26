@@ -2,7 +2,7 @@
 
 A clean, professional FAQ Chatbot application built with React + Vite.
 
-## Current Status: Part 3 Complete ✅
+## Current Status: Part 4 Complete ✅
 
 ### Part 1 - Project Setup & Basic UI ✅
 - React + Vite setup
@@ -27,6 +27,15 @@ A clean, professional FAQ Chatbot application built with React + Vite.
 - Confidence indicators for match quality
 - Fallback handling for poor matches
 - Comprehensive testing suite
+
+### Part 4 - Similarity Threshold & Fallback Handling ✅
+- Configurable similarity threshold (default: 30%)
+- Clear threshold checking logic (thresholdMet flag)
+- Improved fallback messages
+- Confidence level detection (high ≥70%, medium ≥50%, low ≥30%)
+- Threshold-based decision making
+- Customizable threshold per query
+- Enhanced console logging with threshold comparison
 
 ## Tech Stack
 
@@ -91,6 +100,8 @@ FAQ Chatbot/
 ├── PART2_SUMMARY.md               # Part 2 summary
 ├── PART3_TESTING.md               # Part 3 testing guide
 ├── PART3_SUMMARY.md               # Part 3 summary
+├── PART4_TESTING.md               # Part 4 testing guide
+├── PART4_SUMMARY.md               # Part 4 summary
 └── README.md                      # This file
 ```
 
@@ -128,6 +139,61 @@ FAQ Chatbot/
 - ✅ Top-N matches functionality
 - ✅ Comprehensive testing utilities
 
+### Part 4 Features ✅
+- ✅ Configurable similarity threshold (default 30%)
+- ✅ Clear threshold checking with explicit thresholdMet flag
+- ✅ Improved fallback messages (contextual & customizable)
+- ✅ Confidence level detection (high/medium/low)
+- ✅ setThreshold() / getThreshold() configuration methods
+- ✅ Custom threshold per query support
+- ✅ Threshold-based decision logging
+- ✅ Confidence-based UI indicators
+- ✅ Comprehensive threshold testing suite
+
+## Testing Part 4
+
+### Interactive Testing (Recommended)
+Open the application and test threshold behavior:
+
+**Strong Matches (Should meet 30% threshold):**
+1. "How do I reset my password?" - Expect: Answer (high confidence, >70%)
+2. "What is this chatbot?" - Expect: Answer (high confidence, >70%)
+3. "Can I delete my account?" - Expect: Answer (medium confidence, ~60%)
+
+**Near-Threshold Matches (30-60%):**
+1. "I forgot my password" - Expect: Answer or fallback depending on similarity
+2. "Tell me about this bot" - Expect: Possible answer with confidence note
+3. "Remove my account" - Expect: Borderline match behavior
+
+**Fallback Triggers (Below 30% threshold):**
+1. "What is the weather today?" - Expect: Fallback message
+2. "Tell me a joke" - Expect: Fallback message
+3. "Random text xyz" - Expect: Fallback message
+
+### Console Testing
+Run Part 4 tests in browser console:
+```javascript
+// Part 4 threshold tests
+window.runThresholdTests()
+```
+
+### Check Console Output
+Look for detailed threshold comparison:
+```
+Part 4 - Match result: {
+  thresholdMet: true/false,
+  similarity: "XX.X%",
+  usedThreshold: "30.0%",
+  confidence: "high|medium|low|none"
+}
+
+✓ Threshold met (30.0%) - Answer provided
+  OR
+✗ Threshold not met: XX% < 30% - Fallback response
+```
+
+See `PART4_TESTING.md` for detailed test cases.
+
 ## Testing Part 3
 
 ### Interactive Testing (Recommended)
@@ -160,6 +226,9 @@ window.runTests()
 
 // Part 3 tests
 window.runMatchingTests()
+
+// Part 4 tests
+window.runThresholdTests()
 ```
 
 ### Expected Results
