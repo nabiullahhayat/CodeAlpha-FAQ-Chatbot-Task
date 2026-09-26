@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import './Chatbot.css'
+import faqPreprocessingService from '../services/faqPreprocessingService'
 
 const Chatbot = () => {
   const [messages, setMessages] = useState([
@@ -15,8 +16,30 @@ const Chatbot = () => {
     }
   ])
   const [inputValue, setInputValue] = useState('')
+  const [faqLoaded, setFaqLoaded] = useState(false)
   const chatAreaRef = useRef(null)
   const inputRef = useRef(null)
+
+  // Initialize FAQ preprocessing service on mount
+  useEffect(() => {
+    try {
+      faqPreprocessingService.initialize()
+      const stats = faqPreprocessingService.getStatistics()
+      console.log('FAQ Dataset loaded:', stats)
+      setFaqLoaded(true)
+      
+      // Add info message about loaded FAQs
+      const infoMessage = {
+        id: Date.now(),
+        text: `📚 Loaded ${stats.totalFAQs} FAQ questions across ${stats.categories} categories.`,
+        type: 'bot',
+      }
+      setMessages(prev => [...prev, infoMessage])
+    } catch (error) {
+      console.error('Error loading FAQ data:', error)
+      setFaqLoaded(false)
+    }
+  }, [])
 
   // Scroll to bottom when messages change
   useEffect(() => {
@@ -51,11 +74,22 @@ const Chatbot = () => {
     setMessages(prev => [...prev, userMessage])
     setInputValue('')
 
-    // Add bot response (Part 1 - no FAQ matching yet)
+    // Preprocess the user's question (Part 2 - preprocessing only, no matching yet)
+    if (faqLoaded) {
+      const preprocessedQuestion = faqPreprocessingService.preprocessQuestion(trimmedMessage)
+      console.log('User question preprocessing:', {
+        original: preprocessedQuestion.original,
+        processed: preprocessedQuestion.processed,
+        tokens: preprocessedQuestion.tokens,
+        wordCount: preprocessedQuestion.wordCount
+      })
+    }
+
+    // Add bot response (Part 2 - no FAQ matching yet)
     setTimeout(() => {
       const botMessage = {
         id: Date.now() + 1,
-        text: "Thank you for your question! FAQ matching functionality will be added in Part 2.",
+        text: "Thank you for your question! Your input has been preprocessed. FAQ matching functionality will be added in Part 3.",
         type: 'bot',
       }
       setMessages(prev => [...prev, botMessage])
