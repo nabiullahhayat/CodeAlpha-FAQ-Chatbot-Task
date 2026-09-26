@@ -26,6 +26,7 @@ const Chatbot = () => {
   })
   const [inputValue, setInputValue] = useState('')
   const [faqLoaded, setFaqLoaded] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false) // Part 9: Processing state
   const chatAreaRef = useRef(null)
   const inputRef = useRef(null)
 
@@ -81,7 +82,8 @@ const Chatbot = () => {
   const handleSendMessage = () => {
     const trimmedMessage = inputValue.trim()
 
-    if (trimmedMessage === '') {
+    // Part 9: Prevent submission while processing
+    if (trimmedMessage === '' || isProcessing) {
       return
     }
 
@@ -93,6 +95,9 @@ const Chatbot = () => {
     }
     setMessages(prev => [...prev, userMessage])
     setInputValue('')
+
+    // Part 9: Set processing state and show typing indicator
+    setIsProcessing(true)
 
     // Part 4: Enhanced FAQ matching with clear threshold and fallback handling
     if (faqLoaded) {
@@ -143,6 +148,7 @@ const Chatbot = () => {
             type: 'bot',
           }
           setMessages(prev => [...prev, botMessage])
+          setIsProcessing(false) // Part 9: Reset processing state
         } catch (error) {
           console.error('Error matching FAQ:', error)
           const errorMessage = {
@@ -151,6 +157,7 @@ const Chatbot = () => {
             type: 'bot',
           }
           setMessages(prev => [...prev, errorMessage])
+          setIsProcessing(false) // Part 9: Reset processing state
         }
       }, 500)
     } else {
@@ -162,6 +169,7 @@ const Chatbot = () => {
           type: 'bot',
         }
         setMessages(prev => [...prev, botMessage])
+        setIsProcessing(false) // Part 9: Reset processing state
       }, 500)
     }
   }
@@ -244,6 +252,19 @@ const Chatbot = () => {
             </div>
           </div>
         ))}
+        
+        {/* Part 9: Typing Indicator */}
+        {isProcessing && (
+          <div className="message bot-message">
+            <div className="message-content typing-indicator">
+              <div className="typing-dots">
+                <span className="dot"></span>
+                <span className="dot"></span>
+                <span className="dot"></span>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Input Area */}
@@ -256,11 +277,13 @@ const Chatbot = () => {
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
           onKeyPress={handleKeyPress}
+          disabled={isProcessing}
           aria-label="Type your question"
         />
         <button
           className="send-button"
           onClick={handleSendMessage}
+          disabled={isProcessing}
           aria-label="Send message"
         >
           <svg

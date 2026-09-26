@@ -146,6 +146,52 @@
   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
+/* Part 9: Typing Indicator */
+.typing-indicator {
+  padding: 14px 18px;
+  min-width: 70px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.typing-dots {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.typing-dots .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #64748b;
+  animation: typingAnimation 1.4s infinite;
+}
+
+.typing-dots .dot:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.typing-dots .dot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typing-dots .dot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingAnimation {
+  0%, 60%, 100% {
+    transform: translateY(0);
+    opacity: 0.5;
+  }
+  30% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
+}
+
 /* Input Area */
 .input-area {
   padding: 20px 24px;
@@ -176,6 +222,13 @@
 
 .message-input::placeholder {
   color: #94a3b8;
+}
+
+/* Part 9: Disabled state for input */
+.message-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background: #f1f5f9;
 }
 
 .send-button {
