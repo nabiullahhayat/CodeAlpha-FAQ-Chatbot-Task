@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react'
 import './Chatbot.css'
 import faqPreprocessingService from '../services/faqPreprocessingService'
 import faqMatchingService from '../services/faqMatchingService'
-import { saveMessages, loadMessages } from '../utils/storageUtils'
+import { saveMessages, loadMessages, clearMessages } from '../utils/storageUtils'
 
 // Default welcome messages when no saved conversation exists
 const DEFAULT_WELCOME_MESSAGES = [
@@ -172,11 +172,67 @@ const Chatbot = () => {
     }
   }
 
+  // Part 8: Clear chat and reset conversation
+  const handleClearChat = () => {
+    // Confirm before clearing
+    const confirmed = window.confirm(
+      'Are you sure you want to clear the conversation? This will delete all messages and cannot be undone.'
+    )
+    
+    if (confirmed) {
+      console.log('🗑️ Clearing conversation...')
+      
+      // Clear localStorage
+      clearMessages()
+      
+      // Reset state to default welcome messages
+      setMessages(DEFAULT_WELCOME_MESSAGES)
+      
+      // Add FAQ info message after reset
+      if (faqLoaded) {
+        setTimeout(() => {
+          const stats = faqPreprocessingService.getStatistics()
+          const infoMessage = {
+            id: Date.now(),
+            text: `📚 Loaded ${stats.totalFAQs} FAQ questions across ${stats.categories} categories. Ready to answer your questions!`,
+            type: 'bot',
+          }
+          setMessages(prev => [...prev, infoMessage])
+        }, 100)
+      }
+      
+      console.log('✅ Conversation cleared successfully')
+    }
+  }
+
   return (
     <div className="chatbot-wrapper">
       {/* Header */}
       <div className="chatbot-header">
         <h1>FAQ Chatbot</h1>
+        <button
+          className="clear-chat-button"
+          onClick={handleClearChat}
+          aria-label="Clear chat history"
+          title="Clear conversation"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <span className="clear-text">Clear Chat</span>
+        </button>
       </div>
 
       {/* Chat Area */}
