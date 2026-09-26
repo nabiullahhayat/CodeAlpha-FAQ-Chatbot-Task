@@ -17,7 +17,9 @@
   background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
   color: white;
   padding: 24px 30px;
-  text-align: center;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
@@ -26,6 +28,39 @@
   font-weight: 600;
   letter-spacing: -0.5px;
   margin: 0;
+}
+
+/* Part 8: Clear Chat Button */
+.clear-chat-button {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 8px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.clear-chat-button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: translateY(-1px);
+}
+
+.clear-chat-button:active {
+  transform: translateY(0);
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.clear-chat-button svg {
+  width: 16px;
+  height: 16px;
 }
 
 /* Chat Area */
@@ -185,8 +220,17 @@
     max-height: 650px;
   }
 
+  .chatbot-header {
+    padding: 20px;
+  }
+
   .chatbot-header h1 {
     font-size: 24px;
+  }
+
+  .clear-chat-button {
+    padding: 8px 14px;
+    font-size: 13px;
   }
 
   .chat-area {
@@ -222,11 +266,28 @@
   }
 
   .chatbot-header {
-    padding: 20px;
+    padding: 16px;
+    gap: 8px;
   }
 
   .chatbot-header h1 {
     font-size: 22px;
+  }
+
+  .clear-chat-button {
+    padding: 8px 12px;
+    font-size: 12px;
+    gap: 4px;
+  }
+
+  .clear-text {
+    display: none;
+  }
+
+  .clear-chat-button svg {
+    width: 18px;
+    height: 18px;
+    margin: 0;
   }
 
   .chat-area {
@@ -269,6 +330,10 @@
 @media (max-width: 360px) {
   .chatbot-header h1 {
     font-size: 20px;
+  }
+
+  .clear-chat-button {
+    padding: 6px 10px;
   }
 
   .message-content {
