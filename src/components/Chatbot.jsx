@@ -81,38 +81,47 @@ const Chatbot = () => {
     setMessages(prev => [...prev, userMessage])
     setInputValue('')
 
-    // Find matching FAQ and provide answer (Part 3 - FAQ matching with cosine similarity)
+    // Part 4: Enhanced FAQ matching with clear threshold and fallback handling
     if (faqLoaded) {
       setTimeout(() => {
         try {
-          // Find best matching FAQ
+          // Find best matching FAQ using configured threshold
           const matchResult = faqMatchingService.findBestMatch(trimmedMessage)
           
-          console.log('Match result:', {
+          console.log('Part 4 - Match result:', {
             found: matchResult.found,
-            similarity: matchResult.similarity,
-            question: matchResult.question,
+            thresholdMet: matchResult.thresholdMet,
+            similarity: (matchResult.similarity * 100).toFixed(1) + '%',
+            usedThreshold: (matchResult.usedThreshold * 100).toFixed(1) + '%',
+            confidence: matchResult.confidence,
             category: matchResult.category
           })
 
           let botResponse = ''
           
-          if (matchResult.found) {
-            // Format similarity as percentage
-            const similarityPercent = (matchResult.similarity * 100).toFixed(1)
-            
-            // Create response with matched answer
+          // Part 4: Clear threshold-based decision
+          if (matchResult.found && matchResult.thresholdMet) {
+            // Threshold met - return the matched answer
             botResponse = matchResult.answer
             
-            // Add similarity info for debugging (optional - can be removed in production)
-            if (matchResult.similarity < 0.5) {
-              botResponse += `\n\n💡 Note: This answer has ${similarityPercent}% confidence. If this doesn't answer your question, please try rephrasing.`
+            // Add confidence indicator for medium/low confidence matches
+            if (matchResult.confidence === 'medium') {
+              const similarityPercent = (matchResult.similarity * 100).toFixed(1)
+              botResponse += `\n\n💡 Confidence: ${similarityPercent}% - If this doesn't fully answer your question, please try rephrasing.`
+            } else if (matchResult.confidence === 'low') {
+              const similarityPercent = (matchResult.similarity * 100).toFixed(1)
+              botResponse += `\n\n⚠️ Low confidence: ${similarityPercent}% - This might not be the exact answer you're looking for. Please rephrase or contact support.`
             }
             
-            console.log(`✓ Match found with ${similarityPercent}% similarity`)
+            console.log(`✓ Threshold met (${(matchResult.usedThreshold * 100).toFixed(1)}%) - Answer provided`)
           } else {
-            botResponse = matchResult.message || "I couldn't find a good answer to your question. Please try asking in a different way or contact support for help."
-            console.log('✗ No good match found')
+            // Part 4: Threshold not met - use fallback message
+            botResponse = matchResult.message
+            
+            // Log details for debugging
+            const similarityPercent = (matchResult.similarity * 100).toFixed(1)
+            const thresholdPercent = (matchResult.usedThreshold * 100).toFixed(1)
+            console.log(`✗ Threshold not met: ${similarityPercent}% < ${thresholdPercent}% - Fallback response`)
           }
 
           const botMessage = {
