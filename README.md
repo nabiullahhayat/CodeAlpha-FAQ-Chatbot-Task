@@ -2,7 +2,7 @@
 
 A clean, professional FAQ Chatbot application built with React + Vite.
 
-## Current Status: Part 12 Complete ✅ - Accessibility & Keyboard Support
+## Current Status: Part 13 Complete ✅ - Final UI/UX Polish & Responsive Design
 
 ### Part 1 - Project Setup & Basic UI ✅
 - React + Vite setup
@@ -140,6 +140,16 @@ A clean, professional FAQ Chatbot application built with React + Vite.
 - Screen-reader-only hints and instructions (.sr-only class)
 - WCAG 2.1 Level AA compliance
 - All Parts 1-11 features preserved without visual design changes
+
+### Part 13 - Final UI/UX Polish & Responsive Design ✅
+- Consistent spacing, typography, radii, and shadows via CSS design tokens
+- Improved message wrapping for long questions and answers (`pre-wrap`, `overflow-wrap`)
+- Reliable chat scrolling with many messages (`flex` + `min-height: 0`, stable scrollbar gutter)
+- No horizontal overflow on small viewports (safe areas, `min-width: 0` on flex children)
+- Touch-friendly control sizes on mobile (44px minimum targets)
+- Refined tablet and mobile breakpoints; `dvh` for mobile browser chrome
+- `prefers-reduced-motion` support for animations
+- Part 12 accessibility and Parts 1–12 functionality unchanged
 
 ## Tech Stack
 
