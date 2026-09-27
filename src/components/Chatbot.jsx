@@ -19,7 +19,7 @@ const DEFAULT_WELCOME_MESSAGES = [
 ]
 
 const Chatbot = () => {
-  // Part 7: Load saved messages from localStorage, or use default welcome messages
+  // Part 7: Load saved message from localStorage, or use default welcome messages
   const [messages, setMessages] = useState(() => {
     const savedMessages = loadMessages()
     return savedMessages || DEFAULT_WELCOME_MESSAGES
