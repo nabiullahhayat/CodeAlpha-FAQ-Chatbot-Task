@@ -1,3 +1,32 @@
+# Dependencies
 node_modules/
-.DS_Store
+
+# Build output
+dist/
+dist-ssr/
+
+# Environment & secrets
+.env
+.env.*
+!.env.example
+
+# Logs
 *.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor / IDE (local only)
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Vite / cache
+*.local
+.vite/
+
+# Test coverage (if added later)
+coverage/

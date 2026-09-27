@@ -2,7 +2,8 @@
 
 A responsive FAQ chatbot built with **React** and **Vite**. Users ask questions in natural language; the app preprocesses text, matches against a local FAQ knowledge base using **TF-IDF** and **cosine similarity**, applies a **similarity threshold**, and returns answers or helpful fallback messages—all in the browser with no backend.
 
-> **Status:** Parts 1–14 complete — feature-complete, accessible, and production-ready for portfolio use.
+> **Status:** Parts 1–15 complete — submission-ready for GitHub and CodeAlpha portfolio use.  
+> **Branch:** Final development is on `task`; merge into `main` before publishing (see [PART15_SUMMARY.md](./PART15_SUMMARY.md)).
 
 ---
 
@@ -75,7 +76,7 @@ npm install
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | Start dev server (usually http://localhost:5173) |
-| `npm run build` | Production build to `dist/` |
+| `npm run build` | Production build to `dist/` (not committed; run after clone) |
 | `npm run preview` | Serve the production build locally |
 
 Open the URL shown in the terminal, type a question, and press **Enter** or click **Send**.
@@ -172,4 +173,5 @@ This project is intended for **learning and portfolio demonstration**. Feel free
 Detailed milestone write-ups live in the repo root:
 
 - Parts 1–13: `PART*_SUMMARY.md` and `PART*_TESTING.md` where available  
-- Part 14: `PART14_SUMMARY.md`, `PART14_TESTING.md`
+- Part 14: `PART14_SUMMARY.md`, `PART14_TESTING.md`  
+- Part 15: `PART15_SUMMARY.md` (GitHub cleanup & submission)
