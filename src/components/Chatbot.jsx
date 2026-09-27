@@ -82,12 +82,12 @@ const Chatbot = () => {
     }
   }, [messages])
 
-  // Focus input on mount
+  // Part 12: Focus input on mount and after the bot finishes responding
   useEffect(() => {
-    if (inputRef.current) {
+    if (!isProcessing && inputRef.current) {
       inputRef.current.focus()
     }
-  }, [])
+  }, [isProcessing])
 
   // Part 7: Save messages to localStorage whenever they change
   // Part 11: Enhanced with error handling
@@ -133,6 +133,9 @@ const Chatbot = () => {
     }
     setMessages(prev => [...prev, userMessage])
     setInputValue('')
+
+    // Part 12: Keep focus on the question field while the response is prepared
+    inputRef.current?.focus()
 
     // Part 9: Set processing state and show typing indicator
     setIsProcessing(true)
@@ -189,7 +192,7 @@ const Chatbot = () => {
             const thresholdPercent = (matchResult.usedThreshold * 100).toFixed(1)
             console.log(`✗ Threshold not met: ${similarityPercent}% < ${thresholdPercent}% - Fallback response`)
           }
-
+          
           const botMessage = {
             id: Date.now() + 1,
             text: botResponse,
@@ -223,9 +226,10 @@ const Chatbot = () => {
     }
   }
 
-  const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
-      handleSendMessage()
+  const handleInputKeyDown = (e) => {
+    // Part 12: Enter submits via form; Shift+Enter stays safe for future multiline input
+    if (e.key === 'Enter' && e.shiftKey) {
+      e.preventDefault()
     }
   }
 
@@ -259,81 +263,96 @@ const Chatbot = () => {
       }
       
       console.log('✅ Conversation cleared successfully')
+      inputRef.current?.focus()
     }
   }
 
   return (
-    <div className="chatbot-wrapper">
+    <div className="chatbot-wrapper" role="main" aria-label="FAQ Chatbot Application">
       {/* Header */}
-      <div className="chatbot-header">
-        <h1>FAQ Chatbot</h1>
-        <button
-          className="clear-chat-button"
-          onClick={handleClearChat}
-          aria-label="Clear chat history"
-          title="Clear conversation"
-        >
-          <svg
-            width="20"
-            height="20"
-            viewBox="0 0 24 24"
-            fill="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-          <span className="clear-text">Clear Chat</span>
-        </button>
-      </div>
+      <header className="chatbot-header">
+        <h1 id="chatbot-title">FAQ Chatbot</h1>
+      </header>
 
       {/* Chat Area */}
-      <div className="chat-area" ref={chatAreaRef}>
+      <div 
+        className="chat-area" 
+        ref={chatAreaRef}
+        role="log"
+        aria-live="polite"
+        aria-atomic="false"
+        aria-relevant="additions"
+        aria-label="Conversation history"
+      >
         {messages.map((message) => (
-          <div key={message.id} className={`message ${message.type}-message`}>
+          <article
+            key={message.id}
+            className={`message ${message.type}-message`}
+          >
             <div className="message-content">
-              <p>{message.text}</p>
+              <p>
+                <span className="sr-only">
+                  {message.type === 'user' ? 'Your question: ' : 'Chatbot response: '}
+                </span>
+                {message.text}
+              </p>
             </div>
-          </div>
+          </article>
         ))}
         
         {/* Part 9: Typing Indicator */}
         {isProcessing && (
-          <div className="message bot-message">
+          <div
+            className="message bot-message"
+            role="status"
+            aria-live="polite"
+          >
             <div className="message-content typing-indicator">
-              <div className="typing-dots">
+              <div className="typing-dots" aria-hidden="true">
                 <span className="dot"></span>
                 <span className="dot"></span>
                 <span className="dot"></span>
               </div>
+              <span className="sr-only">Chatbot is typing a response</span>
             </div>
           </div>
         )}
       </div>
 
       {/* Input Area */}
-      <div className="input-area">
+      <form 
+        className="input-area" 
+        onSubmit={(e) => {
+          e.preventDefault()
+          handleSendMessage()
+        }}
+        role="search"
+        aria-label="Ask a question"
+      >
+        <label htmlFor="question-input" className="sr-only">
+          Type your question here
+        </label>
         <input
+          id="question-input"
           ref={inputRef}
           type="text"
           className="message-input"
           placeholder="Type your question here..."
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={handleKeyPress}
+          onKeyDown={handleInputKeyDown}
           disabled={isProcessing}
-          aria-label="Type your question"
+          aria-describedby="input-hint"
+          autoComplete="off"
         />
+        <span id="input-hint" className="sr-only">
+          Press Enter to send your question, or Shift+Enter for a new line
+        </span>
         <button
           className="send-button"
-          onClick={handleSendMessage}
           disabled={isProcessing}
-          aria-label="Send message"
+          type="submit"
+          aria-label={isProcessing ? 'Processing your question, please wait' : 'Send your question'}
         >
           <svg
             width="24"
@@ -341,6 +360,8 @@ const Chatbot = () => {
             viewBox="0 0 24 24"
             fill="none"
             xmlns="http://www.w3.org/2000/svg"
+            aria-hidden="true"
+            focusable="false"
           >
             <path
               d="M22 2L11 13"
@@ -359,7 +380,35 @@ const Chatbot = () => {
           </svg>
           <span className="send-text">Send</span>
         </button>
-      </div>
+      </form>
+
+      {/* Part 12: Placed after the form so keyboard tab order is input → Send → Clear */}
+      <button
+        className="clear-chat-button"
+        onClick={handleClearChat}
+        aria-label="Clear chat history and start new conversation"
+        title="Clear conversation"
+        type="button"
+      >
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+          aria-hidden="true"
+          focusable="false"
+        >
+          <path
+            d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        <span className="clear-text">Clear Chat</span>
+      </button>
     </div>
   )
 }
